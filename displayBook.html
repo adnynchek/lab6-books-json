@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Book Information</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .details-box { margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; max-width: 400px; }
+        </style>
+    </head>
+    <body>
+        <h1>Books Information</h1>
+        
+        <label for="book-select">Choose a book title:</label>
+        <select id="book-select">
+            <option value="">-- Select a Book --</option>
+        </select>
+
+        <div id="book-details" class="details-box" style="display: none;"></div>
+
+        <script>
+        
+            let allBooks = [];
+
+            fetch("books.json")
+            .then(response => response.json())
+            .then(data => {
+                allBooks = data.Books;
+                const selectElement = document.getElementById("book-select");
+
+                allBooks.forEach(book => {
+                    const option = document.createElement("option");
+                    option.value = book.title;
+                    option.textContent = book.title;
+                    selectElement.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error("Error loading JSON: ", error);
+                document.getElementById("book-details").innerHTML = "<p style='color:red;'>Failed to load book data.</p>";
+                document.getElementById("book-details").style.display = "block";
+            });
+
+            document.getElementById("book-select").addEventListener("change", function(event) {
+                const selectedTitle = event.target.value;
+                const detailsContainer = document.getElementById("book-details");
+
+                if (!selectedTitle) {
+                    detailsContainer.style.display = "none";
+                    return;
+                }
+
+                const matchedBook = allBooks.find(book => book.title === selectedTitle);
+
+                if (matchedBook) {
+                    
+                    const genresList = Array.isArray(matchedBook.genres) ? matchedBook.genres.join(", ") : matchedBook.genres;
+
+                    detailsContainer.innerHTML = `
+                        <h2>Book Details</h2>
+                        <p><strong>Title:</strong> ${matchedBook.title}</p>
+                        <p><strong>Author:</strong> ${matchedBook.author}</p>
+                        <p><strong>Publication Year:</strong> ${matchedBook.publicationYear || matchedBook.year || 'N/A'}</p>
+                        <p><strong>Genre:</strong> ${genresList}</p>
+                    `;
+                } else {
+                   
+                    detailsContainer.innerHTML = "<p style='color:red;'>Book record not found.</p>";
+                }
+
+                detailsContainer.style.display = "block";
+            });
+        </script>
+    </body>
+</html>
